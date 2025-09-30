@@ -3,7 +3,7 @@
 ; Simple Platform Engine for the ZX Spectrum next
 ; © Copyright Michael Dailly 2025, All rights reserved.
 ;
-; 
+;
 
 ; *******************************************************************************************************
 ;	Function:	Load bytes into RAM
@@ -19,7 +19,7 @@ LoadFile:
 	push	hl
 	pop	de
 	add	hl,hl
-	add	hl,hl	
+	add	hl,hl
 	add	hl,de
 	add	hl,Files		; test
 
@@ -52,9 +52,9 @@ LoadFile:
 
 	; set the banks up
 	ld	a,(SrcBank)
-	NextReg	SRC_BANK+$50,a
+	NEXTREG	SRC_BANK+$50,a
 	ld	a,(DestBank)
-	NextReg	DEST_BANK+$50,a
+	NEXTREG	DEST_BANK+$50,a
 
 	ld	hl,(SrcOff)
 	ld	a,h
@@ -64,7 +64,7 @@ LoadFile:
 	ld	a,d
 	or	DEST_FILE_ADD>>8	;$e0
 	ld	d,a
-@CopyAll:
+.CopyAll:
 	; copy byte
 	ld	a,(hl)
 	ld	(de),a
@@ -72,33 +72,33 @@ LoadFile:
 	inc	hl
 	ld	a,h
 	and	SRC_FILE_OVERFLOW
-	jr	z,@SkipBankSwitch_Src
+	jr	z,.SkipBankSwitch_Src
 	ld	h,SRC_FILE_ADD>>8
 
 	ld	a,(SrcBank)
 	inc	a
 	ld	(SrcBank),a
-	NextReg	SRC_BANK+$50,a
-@SkipBankSwitch_Src:
+	NEXTREG	SRC_BANK+$50,a
+.SkipBankSwitch_Src:
 
 
 	inc	de
 	ld	a,d
 	and	DEST_FILE_OVERFLOW
-	jr	z,@SkipBankSwitch_Dest
+	jr	z,.SkipBankSwitch_Dest
 	ld	d,DEST_FILE_ADD>>8
 
 	ld	a,(DestBank)
 	inc	a
 	ld	(DestBank),a
-	NextReg	DEST_BANK+$50,a
-@SkipBankSwitch_Dest:
+	NEXTREG	DEST_BANK+$50,a
+.SkipBankSwitch_Dest:
 
 	add	bc,-1
 	ld	a,b
 	or	c
 	and	a
-	jr	nz,@CopyAll
+	jr	nz,.CopyAll
 	ret
 
 
@@ -112,7 +112,7 @@ LoadPalette:
 	push	hl
 	pop	de
 	add	hl,hl
-	add	hl,hl	
+	add	hl,hl
 	add	hl,de
 	add	hl,Files
 
@@ -145,22 +145,22 @@ LoadPalette:
 
 	; set the banks up
 	ld	a,(SrcBank)
-	NextReg	SRC_BANK+$50,a
+	NEXTREG	SRC_BANK+$50,a
 
 	ld	hl,(SrcOff)
 	ld	a,h
 	or	$c0
 	ld	h,a
 
-@CopyAll:
+.CopyAll:
 	; copy byte
 	ld	a,(hl)
-	NextReg	$44,a
+	NEXTREG	$44,a
 
 	inc	hl
 	ld	a,h
 	and	$20
-	jr	z,@SkipBankSwitch_Src
+	jr	z,.SkipBankSwitch_Src
 	ld	a,h
 	and	$1f
 	or	$c0
@@ -169,15 +169,15 @@ LoadPalette:
 	ld	a,(SrcBank)
 	inc	a
 	ld	(SrcBank),a
-	NextReg	SRC_BANK+$50,a
-@SkipBankSwitch_Src:
+	NEXTREG	SRC_BANK+$50,a
+.SkipBankSwitch_Src:
 
 
 	add	bc,-1
 	ld	a,b
 	or	c
 	and	a
-	jr	nz,@CopyAll
+	jr	nz,.CopyAll
 	ret
 
 

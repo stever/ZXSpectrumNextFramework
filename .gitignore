@@ -1,3 +1,4 @@
+.tmp/
 bin/CSpect.exe
 bin/CSpect.exe.config
 bin/DebugOut.dll
@@ -24,6 +25,8 @@ bin/Zip2SD.exe
 code/platformer.nex
 code/platformer.dat.map
 code/framework.dat.map
+code/framework.lst
 code/framework.nex
+code/framework.sld
 code/framework.dat
 bin/Zip2SD.runtimeconfig.json

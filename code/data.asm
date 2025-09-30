@@ -2,10 +2,10 @@
 ; ******************************************************************************************************************************************************************************************************************************************
 ; ******************************************************************************************************************************************************************************************************************************************
 
-		Seg	DATA_SEG
+		org	DATA_SEG
 DataStart:
 		db	1,2,3,4,5
-STACKSTART	ds	256
+; STACKSTART	ds	256
 VBlank		db	0
 Shake		db	0				; Screen shake on?
 ShakeX		db	0				; screen shake on X		*2 for fraction
@@ -36,28 +36,28 @@ DMACopyProg
 		db	$C3				; R6-RESET DMA
 		db	$C7				; R6-RESET PORT A Timing
         	db	$CB				; R6-SET PORT B Timing same as PORT A
-		
+
         	db	$7D 				; R0-Transfer mode, A -> B
 DMASrc  	dw	$1234				; R0-Port A, Start address		(source address)
 DMALen		dw	240				; R0-Block length			(length in bytes)
-		
+
         	db	$54 				; R1-Port A address incrementing, variable timing
         	db	$02				; R1-Cycle length port A
-		  		
+
         	db	$50				; R2-Port B address fixed, variable timing
         	db	$02 				; R2-Cycle length port B
-		  		
+
 		db	$AD 				; R4-Continuous mode  (use this for block tansfer)
 DMADest		dw	$4000				; R4-Dest address			(destination address)
-		  		
+
 		db	$82				; R5-Restart on end of block, RDY active LOW
-	 		
+
 		db	$CF				; R6-Load
 		db	$B3				; R6-Force Ready
 		db	$87				; R6-Enable DMA
 ENDDMA
 
-DMASIZE      	equ	ENDDMA-DMACOPY
+DMASIZE      	equ	ENDDMA-DMACopyProg
 
 
 
@@ -85,9 +85,28 @@ Sprites:	db	0				; x
 		align	256
 StaticData:
 
+; Files:
+; 		FILE	ULAScreenFile,"../art/pyj.scr",ULAScreenPyj
+; 		FILE	L2ScreenDemo,"../art/beastf.256",L2ScreenTest
+
+; File IDs - must match order of ROM:add_file calls below
+ULAScreenFile		equ	0
+L2ScreenDemo		equ	1
+
+	; Add files to ROM filesystem
+	; These files can be loaded dynamically at runtime using LoadFile
+	lua allpass
+		ROM:add_file("ULAScreenFile", "art/pyj.scr")
+		ROM:add_file("L2ScreenDemo", "art/beastf.256")
+	endlua
+
+; File table (stored in DATA_SEG so LoadFile can access it)
 Files:
-		FILE	ULAScreenFile,"../art/pyj.scr",ULAScreenPyj
-		FILE	L2ScreenDemo,"../art/beastf.256",L2ScreenTest
+	; Files stored in the filesys banks (starting at bank 20)
+	lua allpass
+		dofile("code/data.lua")
+		generate_file_table()
+	endlua
 
 
 RandomTable:	db   82,97,120,111,102,116,20,12
@@ -241,18 +260,23 @@ HexCharset:
 		db %01000000
 		db %00000000
 
+DATA_SEG = $
 
 
 ;****************************************************************************************************
 ;****************************************************************************************************
-;			File data
+;			File data (actual binary file contents in banks 20+)
 ;****************************************************************************************************
 ;****************************************************************************************************
 
-        seg     FILE_SEG
-ULAScreenPyj:        	incbin	"../art/pyj.scr"
-L2ScreenTest:        	incbin	"../art/beastf.256"
+	org	FILE_SEG
 
+	; Generate incbin statements for all files with proper banking
+	lua allpass
+		generate_file_incbins()
+	endlua
+
+FILE_SEG = $
 
 ; ##################################################################################################
 

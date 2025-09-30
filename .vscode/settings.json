@@ -1,0 +1,22 @@
+{
+  "[*]": {
+    "editor.tabSize": 8,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false
+  },
+  "editor.renderWhitespace": "boundary",
+  "editor.rulers": [8, 16, 24, 32, 40, 80, 120],
+  "files.associations": {
+    "*.asm": "asm-collection",
+    "*.inc": "asm-collection"
+  },
+  "terminal.integrated.env.linux": {
+    "BUILD_TARGET": "next"
+  },
+  "terminal.integrated.env.windows": {
+    "BUILD_TARGET": "next"
+  },
+  "terminal.integrated.env.osx": {
+    "BUILD_TARGET": "next"
+  }
+}

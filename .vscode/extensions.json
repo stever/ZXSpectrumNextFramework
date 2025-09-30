@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "EditorConfig.EditorConfig",
+    "maziac.asm-code-lens",
+    "maziac.dezog",
+    "maziac.hex-hover-converter",
+    "maziac.z80-instruction-set",
+    "maziac.nex-fileviewer",
+    "mborik.z80-macroasm"
+  ]
+}

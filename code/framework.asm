@@ -3,29 +3,48 @@
 ; Simple Platform Engine for the ZX Spectrum next
 ; © Copyright Michael Dailly 2025, All rights reserved.
 ;
-; 
-                opt             ZXNEXT
+;
+                opt --zxnext
+                device zxspectrumnext
+
+                lua allpass
+                        ROM = dofile("code/filesys.lua")
+                endlua
 
                 include "includes.asm"
                 include "irq.asm"
 
-                seg     CODE_SEG
+                org     CODE_SEG
+
+; Stack
+stack_end:
+                ds      256 - 1                                 ; Stack size is 256 bytes
+stack_start:
+                db      0
+stack_top:
+
 StartAddress:
+                ld      sp, stack_top                           ; Set stack pointer
+
                 call    SetupIRQs
-                
-                call    CLS                                     ; clear the ULA screen
+
+                call    Cls                                     ; clear the ULA screen
                 ld      a,7
-                call    ClsATTR                                 ; clear the ULA Attribute screen with INK 7 paper 0   F_B_PPP_III 
+                call    ClsATTR                                 ; clear the ULA Attribute screen with INK 7 paper 0   F_B_PPP_III
+
+                NEXTREG $07,3                                   ; select 28Mhz Z80n
+                NEXTREG $08,%01001000                           ; Disable RAM contention and enable 8bit DACS
+                NEXTREG $14, $e7                                ; Bright PINK
+                NEXTREG $15,%00000001                           ; Sprites on, S U L layer order and enable sprites
+                NEXTREG $12,16                                  ; Layer 2 base bank 16 (32 for 8k banks)
+
+                ; LOAD    ULAScreenFile,ULAScreenPysical
+                ; LOAD    L2ScreenDemo,32*8192
+
+                LOAD_ULA_SCREEN ULAScreenFile                   ; Load the Pyjamarama loading screen in to the ULA screen (test)
+                LOAD_LAYER2 L2ScreenDemo                        ; Load the Shadow of the Beast forground screen into Layer 2
+
                 call    Layer2on
-        
-                NextReg $07,3                                   ; select 28Mhz Z80n
-                NextReg $08,%01001000                           ; Disable RAM contention and enable 8bit DACS
-                NextReg $14, $e7                                ; Bright PINK
-                NextReg $15,%0_0_0_000_0_1                      ; Sprites on, S U L layer order and enable sprites
-                NextReg $12,16                                  ; Layer 2 base bank 16 (32 for 8k banks)
-                
-                LOAD    ULAScreenFile,ULAScreenPysical          ; Load the Pyjamarama loading screen in to the ULA screen (test)
-                LOAD    L2ScreenDemo,32*8192                    ; Load the Shadow of the Beast forground screen into Layer 2
 
                 call    InitGlobals
 ; *****************************************************************************************************************************
@@ -34,9 +53,9 @@ StartAddress:
 MainLoop:
                 xor     a
                 ld      (VBlank),a
-@Wait:          ld      a,(VBlank)
+.Wait:          ld      a,(VBlank)
                 and     a
-                jr      z,@Wait
+                jr      z,.Wait
 
                 ; Do service routines just after a Vertical Blank (VBlank)
                 call    FlipBuffers
@@ -45,14 +64,14 @@ MainLoop:
                 ; press space to shake the screen a little
                 ld      a,(Keys+VK_SPACE)
                 and     a
-                jr      z,@notpressed
+                jr      z,.notpressed
                 xor     a
                 ld      (Keys+VK_SPACE),a
 
                 ld      a,(Shake)
                 add     a,4
                 ld      (Shake),a
-@notpressed:
+.notpressed:
 
                 ; draw a HEX number to the ULA screen
                 ld      a,(HexValue)
@@ -70,9 +89,9 @@ MainLoop:
 ; *****************************************************************************************************************************
 FlipBuffers:
                 ld      a,(ShakeX)
-                NextReg $26,a
+                NEXTREG $26,a
                 ld      a,(ShakeY)
-                NextReg $27,a
+                NEXTREG $27,a
                 ret
 
 
@@ -88,16 +107,26 @@ InitGlobals:
 ; *****************************************************************************************************************************
                 include "filesys.asm"
                 include "utils.asm"
+CODESEG = $
 ENDOFCODE_ADD:
                 include "data.asm"
 ENDOFDATA_ADD:
 
 
                 ; wheres our end address?
-                message "End of code   = ",ENDOFCODE_ADD
-                message "End of data   = ",ENDOFDATA_ADD
-                message "End of memory = ",ENDOFMEMORY_ADD
-        
-                savenex "framework.nex",StartAddress,StackStart
+                lua
+                        print(string.format("End of code   = $%X", _c("ENDOFCODE_ADD")))
+                        print(string.format("End of data   = $%X", _c("ENDOFDATA_ADD")))
+                        print(string.format("End of memory = $%X", _c("ENDOFMEMORY_ADD")))
+                endlua
 
+                savenex open "code/framework.nex",StartAddress
+                savenex core 3,0,0
+                savenex cfg 0
+                savenex auto
+                savenex close
 
+                if ((_ERRORS = 0) && (_WARNINGS = 0))
+                        ; shellexec "mono bin/CSpect.exe -w3 -zxnext -nextrom -tv -16bit -s28 -remote -mmc=./"
+                        shellexec "mono bin/CSpect.exe -w3 -zxnext -nextrom -tv -16bit -s28 -remote -mmc=./ code/framework.nex"
+                endif

@@ -3,7 +3,7 @@
 ; 	Utils file - keep all utils variables in this file
 ;
 ; port $123b
-; 	bit 0 = WRITE paging on. $0000-$3fff write access goes to selected Layer 2 page 
+; 	bit 0 = WRITE paging on. $0000-$3fff write access goes to selected Layer 2 page
 ; 	bit 1 = Layer 2 ON (visible)
 ; 	bit 3 = Page in back buffer (reg 19)
 ; 	bit 6/7= VRAM Banking selection (layer 2 uses 3 banks) (0,$40 and $c0 only)
@@ -21,10 +21,10 @@ Layer2on:
 		ld	a,(Port123b)
 		or	2
 		ld	(Port123b),a
-                out	(c),a     
-                ret                          
+                out	(c),a
+                ret
 
-               	
+
 ; ************************************************************************
 ;
 ;	Function:	Disable the 256 colour Layer 2 bitmap
@@ -35,8 +35,8 @@ Layer2off:
 		ld	a,(Port123b)
 		and	$fd
 		ld	(Port123b),a
-                out	(c),a     
-                ret          
+                out	(c),a
+                ret
 
 
 
@@ -80,7 +80,7 @@ Cls:
 
 
 ; ******************************************************************************
-; 
+;
 ; Function:	ReadMouse
 ;
 ; Used:		uses bc,a
@@ -113,19 +113,19 @@ MouseY		db	0
 ;	DE= address to print to (normal specturm screen)
 ;
 ; ******************************************************************************
-PrintHex:	
+PrintHex:
 		push	hl
 		push	af
 
 		srl	a
 		srl	a
 		srl	a
-		srl	a	
+		srl	a
 		call	DrawHexCharacter
 		inc	e
 
 		pop	af
-		and	$f	
+		and	$f
 		call	DrawHexCharacter
 		pop	hl
 		ret
@@ -136,7 +136,7 @@ PrintHex:
 ; DE= address to print to (normal specturm screen)
 ; uses:	hl,de
 ;
-DrawHexCharacter:	
+DrawHexCharacter:
 		ld	hl,HexCharset
 		add	a,a
 		add	a,a		; *8
@@ -146,32 +146,32 @@ DrawHexCharacter:
 		; data is aligned to 256 bytes
 		ld	a,(hl)
 		ld	(de),a
-		inc	l	
-		inc	d		
+		inc	l
+		inc	d
 		ld	a,(hl)
 		ld	(de),a
-		inc	l	
-		inc	d		
+		inc	l
+		inc	d
 		ld	a,(hl)
 		ld	(de),a
-		inc	l	
-		inc	d		
+		inc	l
+		inc	d
 		ld	a,(hl)
 		ld	(de),a
-		inc	l	
-		inc	d		
+		inc	l
+		inc	d
 		ld	a,(hl)
 		ld	(de),a
-		inc	l	
-		inc	d		
+		inc	l
+		inc	d
 		ld	a,(hl)
 		ld	(de),a
-		inc	l	
-		inc	d		
+		inc	l
+		inc	d
 		ld	a,(hl)
 		ld	(de),a
-		inc	l	
-		inc	d		
+		inc	l
+		inc	d
 		ld	a,(hl)
 		ld	(de),a
 		ld	a,d
@@ -182,7 +182,7 @@ DrawHexCharacter:
 
 
 ; ******************************************************************************
-; 
+;
 ; Function:	Upload a set of sprites
 ; In:	E = sprite shape to start at
 ;		D = number of sprites
@@ -193,25 +193,25 @@ UploadSprites
 		; Upload sprite graphics
                 ld      a,e			; get start shape
                 ld	e,0			; each pattern is 256 bytes
-@AllSprites:               
+.AllSprites:
                 ; select pattern 2
                 ld      bc, $303B
                 out     (c),a
 
                 ; upload ALL sprite sprite image data
                 ld      bc, SpriteShape
-@UpLoadSprite:           
+.UpLoadSprite:
                 outinb				; port=(hl), hl++
 
                 dec     de
                 ld      a,d
-                or      e               
-                jr      nz, @UpLoadSprite
+                or      e
+                jr      nz, .UpLoadSprite
                 ret
 
 
 ; ******************************************************************************
-; 
+;
 ; Function:	Upload a set of sprites
 ; In:		E = sprite shape to start at
 ;		D = number of sprites
@@ -222,20 +222,20 @@ UploadSpritesDMA
 		; Upload sprite graphics
                 ld      a,e			; get start shape
                 ld	e,0			; each pattern is 256 bytes
-@AllSprites:               
+.AllSprites:
                 ; select pattern 2
                 ld      bc, $303B
                 out     (c),a
 
                 ; upload ALL sprite sprite image data
                 ld      bc, SpriteShape
-@UpLoadSprite:           
+.UpLoadSprite:
                 outinb				; port=(hl), hl++
 
                 dec     de
                 ld      a,d
-                or      e               
-                jr      nz, @UpLoadSprite
+                or      e
+                jr      nz, .UpLoadSprite
                 ret
 
 
@@ -246,33 +246,33 @@ ReadKeyboard:
 		; clear all keys first
 		ld	b,39
 		ld	hl,Keys
-		xor	a		
-@lp1:		ld	(hl),a
+		xor	a
+.lp1:		ld	(hl),a
 		inc	hl
-		djnz	@lp1
+		djnz	.lp1
 
 		ld	ix,Keys
 		ld	bc,$fefe	;Caps,Z,X,C,V
 		ld	hl,RawKeys
-@ReadAllKeys:	in	a,(c)
+.ReadAllKeys:	in	a,(c)
 		ld	(hl),a
-		inc	hl		
-		
+		inc	hl
+
 		ld	d,5
 		ld	e,$ff
-@DoAll:		srl	a
-		jr	c,@notset
+.DoAll:		srl	a
+		jr	c,.notset
 		ld	(ix+0),e
-@notset:	inc	ix
+.notset:	inc	ix
 		dec	d
-		jr	nz,@DoAll
+		jr	nz,.DoAll
 
 		ld	a,b
 		sla	a
 		jr	nc,ExitKeyRead
 		or	1
 		ld	b,a
-		jp	@ReadAllKeys
+		jp	.ReadAllKeys
 ExitKeyRead:
 		ret
 
@@ -283,19 +283,19 @@ ExitKeyRead:
 ;		de = size
 ; ******************************************************************************
 UploadCopper:
-		NextReg	$61,0
-		NextReg	$62,0
+		NEXTREG	$61,0
+		NEXTREG	$62,0
 
 
-@lp1:		ld	a,(hl)
-		NextReg	$60,a
+.lp1:		ld	a,(hl)
+		NEXTREG	$60,a
 
 		inc	hl
 		dec	de
 		ld	a,d
 		or	e
 		cp	0
-		jr	nz,@lp1		
+		jr	nz,.lp1
 		ret
 
 
@@ -340,7 +340,7 @@ DMACopy:
 ; uses  : af, bc, de, hl
 
 ;random:
-	ld	hl,(seed)
+	ld	hl,(Seed)
 
 	ld	a,(hl)                 ; i = ( i & 7 ) + 1
 	and	7
@@ -352,31 +352,31 @@ DMACopy:
 	ld	b,h                    ; bc = &q[i]
 	add	a,l
 	ld	c,a
-	jr	nc,@Skip1
+	jr	nc,.Skip1
 	inc	b
-@Skip1:
+.Skip1:
 	ld	a,(bc)                 ; y = q[i]
 	ld	d,a
 	ld	e,a
 	ld 	a,(hl)                 ; da = 256 * y + cy
 
 	sub	e                      ; da = 255 * y + cy
-	jr	nc,@Skip2
+	jr	nc,.Skip2
 	dec	d
-@Skip2
+.Skip2
 	sub	e                      ; da = 254 * y + cy
-	jr	nc,@Skip3
+	jr	nc,.Skip3
 	dec	d
-@Skip3:
+.Skip3:
 	sub	e                      ; da = 253 * y + cy
-	jr	nc,@Skip4
+	jr	nc,.Skip4
 	dec	d
-@Skip4:
+.Skip4:
 	ld	(hl),d                 ; cy = da >> 8, x = da & 255
 	cpl                         	; x = (b-1) - x = -x - 1 = ~x + 1 - 1 = ~x
 	ld	(bc),a                 ; q[i] = x
 
-	ld	(seed),hl
+	ld	(Seed),hl
 	ret
 
 Random:
@@ -408,7 +408,7 @@ Random:
 
 	ld	d,h      		; c = t / 256
 
-	ld	(random+1),de
+	ld	(Random+1),de
 
 	ld	a,l      		; x = t % 256
 	cpl           			; x = (b-1) - x = -x - 1 = ~x + 1 - 1 = ~x
@@ -442,12 +442,12 @@ Random:
 DoScreenShake:
 	ld	a,(Shake)
 	cp	$f
-	jr	c,@carryon
+	jr	c,.carryon
 	ld	a,$f
-@carryon:
+.carryon:
 	ld	(Shake),a
 
-	ld	hl,shake0	; get shake table 
+	ld	hl,shake0	; get shake table
 	add	a,a
 	add	a,a
 	add	a,a
@@ -459,7 +459,7 @@ DoScreenShake:
 	ld	b,a		; remember shake/2
 
 	push	hl
-	call	random		; use a 0 to 7 number (but *2 for fraction)
+	call	Random		; use a 0 to 7 number (but *2 for fraction)
 	pop	hl
 	push	hl
 	and	$f
@@ -469,12 +469,12 @@ DoScreenShake:
 	srl	a		; ditch fraction
 	ld	(ShakeX),a
 
-	call	random		; use a 0 to 7 number (but *2 for fraction)
+	call	Random		; use a 0 to 7 number (but *2 for fraction)
 	pop	hl
 	and	$f
 	add	hl,a
 	ld	a,(hl)
-	sub	b	
+	sub	b
 	srl	a		; ditch fraction
 	ld	(ShakeY),a
 
@@ -490,7 +490,7 @@ DoScreenShake:
 ;
 	ld	a,(Shake)
 	and	a
-	ret	z	
+	ret	z
 	dec	a		; sub 0.5
 	ld	(Shake),a
 
@@ -498,9 +498,9 @@ DoScreenShake:
 	ret	c
 	sub	2		; then sub 2
 	test	$80
-	jr	nz,@StoreIt
+	jr	nz,.StoreIt
 	ld	a,0		; gone neg?
-@StoreIt:
+.StoreIt:
 	ld	(Shake),a
 
 	ret

@@ -5,10 +5,34 @@
 ; ************************************************************************
 
 	; define segments
-        seg     CODE_SEG, 4:$0000,$8000				; flat address
-        seg     DATA_SEG, 0:$0000,$C000				; Data
-        seg     IRQ_SEG,  1:$1cfc,$fcfc				; IRQ vector/routine
-        seg	FILE_SEG, 20:$0000,$0000			; Start of files (after screens/layer2 etc)
+        ; seg	CODE_SEG,  4:$0000,$8000				; flat address
+        ; seg	DATA_SEG,  0:$0000,$C000				; Data
+        ; seg	IRQ_SEG,   1:$1cfc,$fcfc				; IRQ vector/routine
+        ; seg	FILE_SEG, 20:$0000,$0000			; Start of files (after screens/layer2 etc)
+
+; Code Segment - Bank 4, offset $0000
+CODE_BANK		equ	4
+CODE_BANK_OFFSET	equ	$0000	; Offset within bank 4
+CODE_SEG_START		equ	$8000	; Absolute address
+CODE_SEG = CODE_SEG_START
+
+; Data Segment - Bank 0, offset $0000
+DATA_BANK		equ	0
+DATA_BANK_OFFSET	equ	$0000	; Offset within bank 0
+DATA_SEG_START		equ	$C000	; Absolute address
+DATA_SEG = DATA_SEG_START
+
+; IRQ Segment - Bank 1, offset $1CFC
+IRQ_BANK		equ	1
+IRQ_BANK_OFFSET		equ	$1CFC	; Offset within bank 1
+IRQ_SEG_START		equ	$FCFC	; Absolute address
+IRQ_SEG = IRQ_SEG_START
+
+; File Segment - Bank 20, offset $0000
+FILE_BANK		equ	20
+FILE_BANK_OFFSET	equ	$0000	; Offset within bank 20
+FILE_SEG_START		equ	$0000	; Absolute address
+FILE_SEG = FILE_SEG_START
 
 ; Hardware
 Kempston_Mouse_Buttons		equ	$fadf
@@ -98,12 +122,30 @@ SRC_FILE_MASK		equ	(((((SRC_BANK&7)*8192)+8192)-1)>>8)
 DEST_FILE_MASK		equ	(((((DEST_BANK&7)*8192)+8192)-1)>>8)
 
 ;	LOAD <file_id>,<physical_dest_address>
-LOAD	macro
-		ld		hl,\0
-		ld		de,0+\1&$1fff
-		ld		a,0+\1>>13
-		call	LoadFile
-		endm
+; LOAD	macro
+; 		ld		hl,\0
+; 		ld		de,0+\1&$1fff
+; 		ld		a,0+\1>>13
+; 		call	LoadFile
+; 		endm
+
+	; General macro to load a file to any bank/offset
+	macro LOAD_TO_BANK file_id, dest_bank, dest_offset
+		LD	HL, file_id
+		LD	DE, dest_offset
+		LD	A, dest_bank
+		CALL	LoadFile
+	endm
+
+	; Convenience macro to load Layer 2 image
+	macro LOAD_LAYER2 file_id
+		LOAD_TO_BANK file_id, 32, $0000
+	endm
+
+	; Convenience macro to load ULA screen
+	macro LOAD_ULA_SCREEN file_id
+		LOAD_TO_BANK file_id, 10, $0000
+	endm
 
 ; *******************************************************************************************************
 ;
@@ -116,13 +158,13 @@ LOAD	macro
 ; *******************************************************************************************************
 
 ;		File	<def_label>,<filename>,<incbin_address>
-file_id		def	0		
+file_id		equ	0
 File	macro
 \0:		equ	file_id
 		dw	BANKOFF(\2)
 		db	BANK(\2)
 		dw	Filesize(\1)
-file_id		def	file_id+1
+file_id		equ	file_id+1
 		endm
 
 ;		File	<def_label>,<size in bytes>,<incbin_address>
@@ -140,37 +182,37 @@ file_id		def	file_id+1
 ; ***********************************************************************************************************************************************
 ;	General macros
 ; ***********************************************************************************************************************************************
-CLC		macro		
+CLC		macro
 		or	a
 		endm
-SEC		macro		
+SEC		macro
 		scf
 		endm
 
 ; Simple MMU instructions
-MMU0		macro		
-		NextReg	$50,a
+MMU0		macro
+		NEXTREG	$50,a
 		endm
-MMU1		macro		
-		NextReg	$51,a
+MMU1		macro
+		NEXTREG	$51,a
 		endm
-MMU2		macro		
-		NextReg	$52,a
+MMU2		macro
+		NEXTREG	$52,a
 		endm
-MMU3		macro		
-		NextReg	$53,a
+MMU3		macro
+		NEXTREG	$53,a
 		endm
-MMU4		macro		
-		NextReg	$54,a
+MMU4		macro
+		NEXTREG	$54,a
 		endm
-MMU5		macro		
-		NextReg	$55,a
+MMU5		macro
+		NEXTREG	$55,a
 		endm
-MMU6		macro		
-		NextReg	$56,a
+MMU6		macro
+		NEXTREG	$56,a
 		endm
-MMU7		macro		
-		NextReg	$57,a
+MMU7		macro
+		NEXTREG	$57,a
 		endm
 
 

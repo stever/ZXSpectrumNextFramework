@@ -1,0 +1,55 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "dezog",
+      "request": "launch",
+      "name": "Internal Simulator",
+      "remoteType": "zsim",
+      "zsim": {
+        "preset": "spectrum",
+        "memoryModel": "ZXNEXT"
+      },
+      "sjasmplus": [
+        {
+          "path": "code/framework.sld"
+        }
+      ],
+      "history": {
+        "reverseDebugInstructionCount": 1000000,
+        "spotCount": 10,
+        "codeCoverageEnabled": true
+      },
+      "startAutomatically": false,
+      "commandsAfterLaunch": [],
+      "rootFolder": "${workspaceFolder}",
+      "topOfStack": "stack_top",
+      "load": "code/framework.nex",
+      "smallValuesMaximum": 513,
+      "tmpDir": ".tmp",
+      "preLaunchTask": "Build ZX Spectrum Next"
+    },
+    {
+      "type": "dezog",
+      "request": "launch",
+      "name": "CSpect",
+      "remoteType": "cspect",
+      "sjasmplus": [
+        {
+          "path": "code/framework.sld"
+        }
+      ],
+      "history": {
+        "reverseDebugInstructionCount": 1000000,
+        "spotCount": 10
+      },
+      "startAutomatically": false,
+      "commandsAfterLaunch": [],
+      "rootFolder": "${workspaceFolder}",
+      "topOfStack": "stack_top",
+      "load": "code/framework.nex",
+      "smallValuesMaximum": 513,
+      "tmpDir": ".tmp"
+    }
+  ]
+}
