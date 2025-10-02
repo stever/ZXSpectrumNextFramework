@@ -9,6 +9,9 @@
 
                 lua allpass
                         ROM = dofile("code/filesys.lua")
+                        if package.config:sub(1,1) == '\\' then
+                                sj.insert_define("WINDOWS", "1")
+                        end
                 endlua
 
                 include "includes.asm"
@@ -127,6 +130,11 @@ ENDOFDATA_ADD:
                 savenex close
 
                 if ((_ERRORS = 0) && (_WARNINGS = 0))
-                        ; shellexec "mono bin/CSpect.exe -w3 -zxnext -nextrom -tv -16bit -s28 -remote -mmc=./"
-                        shellexec "mono bin/CSpect.exe -w3 -zxnext -nextrom -tv -16bit -s28 -remote -mmc=./ code/framework.nex"
+                        ifdef WINDOWS
+                                shellexec "bin\\CSpect.exe -w3 -zxnext -nextrom -tv -16bit -s28 -remote -mmc=./ code/framework.nex"
+                                ; shellexec "bin\\CSpect.exe -w3 -zxnext -nextrom -tv -16bit -s28 -remote -mmc=./"
+                        else
+                                shellexec "mono bin/CSpect.exe -w3 -zxnext -nextrom -tv -16bit -s28 -remote -mmc=./ code/framework.nex"
+                                ; shellexec "mono bin/CSpect.exe -w3 -zxnext -nextrom -tv -16bit -s28 -remote -mmc=./"
+                        endif
                 endif
